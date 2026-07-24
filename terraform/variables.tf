@@ -40,3 +40,13 @@ variable "cluster_name" {
   default     = "starttech-cluster"
 }
 
+variable "azs" {
+  description = "Availability Zones to spread subnets across (must be 2, in aws_region)"
+  type        = list(string)
+}
+
+variable "alb_load_balancer_name" {
+  description = "Fixed name given to the ALB via the k8s Ingress annotation alb.ingress.kubernetes.io/load-balancer-name — lets Terraform look it up by name once k8s creates it"
+  type        = string
+  default     = "starttech-alb"
+}

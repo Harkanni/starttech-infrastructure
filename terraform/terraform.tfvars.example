@@ -1,0 +1,7 @@
+aws_region = "us-east-1"
+azs        = ["us-east-1a", "us-east-1b"]
+
+# Must match the alb.ingress.kubernetes.io/load-balancer-name annotation
+# set on the k8s Ingress in the application repo, so Terraform's data
+# source can find the ALB by name once it's created.
+alb_load_balancer_name = "starttech-alb"
