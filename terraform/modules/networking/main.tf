@@ -67,7 +67,7 @@ resource "aws_nat_gateway" "nat" {
     Name = "${var.project_name}-nat-gw-${count.index + 1}"
   }
 
-  depends_on = [aws_internet_gateway.igw]
+  depends_on = [aws_internet_gateway.igw, aws_eip.nat]
 }
 
 # Route Table for Public Subnets
