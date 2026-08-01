@@ -43,6 +43,7 @@ variable "cluster_name" {
 variable "azs" {
   description = "Availability Zones to spread subnets across (must be 2, in aws_region)"
   type        = list(string)
+  default      = ["us-west-2a", "us-west-2b"]
 }
 
 variable "alb_load_balancer_name" {

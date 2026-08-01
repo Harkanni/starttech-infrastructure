@@ -22,3 +22,5 @@ override.tf.json
 # Logs
 crash.log
 crash.*.log
+get_helm*
+helm-v3*

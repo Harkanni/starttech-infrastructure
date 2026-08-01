@@ -45,11 +45,11 @@ output "redis_endpoint" {
 
 output "cloudfront_domain_name" {
   description = "Public CloudFront URL — the single domain serving both frontend and /api/*"
-  value       = module.cdn.cloudfront_domain_name
+  value       = one(module.cdn[*].cloudfront_domain_name)
 }
 
 output "cloudfront_distribution_id" {
   description = "CloudFront distribution ID — used for cache invalidation in the frontend CI/CD pipeline"
-  value       = module.cdn.cloudfront_distribution_id
+  value       = one(module.cdn[*].cloudfront_distribution_id)
 }
 

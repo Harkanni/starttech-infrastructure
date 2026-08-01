@@ -78,12 +78,43 @@ resource "aws_eks_cluster" "starttech" {
 # ---------------------------------------------------------------------------
 # EKS Managed Node Group (the actual worker EC2 instances)
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Launch Template: needed to raise the IMDS hop limit from its EKS default
+# of 1 to 2. Pod traffic to the instance metadata service crosses an extra
+# network hop (the container bridge) that plain node-level traffic doesn't
+# — with hop limit 1, that extra hop means the packet's TTL expires before
+# ever reaching a pod, so nothing running inside a container can fetch
+# credentials from the node's IAM role. This is why the ALB controller
+# pod couldn't authenticate to AWS at all despite having a valid role.
+# ---------------------------------------------------------------------------
+resource "aws_launch_template" "eks_nodes" {
+  name_prefix = "starttech-eks-node-"
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name = "starttech-eks-node"
+    }
+  }
+}
+
 resource "aws_eks_node_group" "starttech" {
   cluster_name    = aws_eks_cluster.starttech.name
   node_group_name = "starttech-node-group"
   node_role_arn   = aws_iam_role.eks_node_group.arn
   subnet_ids      = var.private_subnet_ids
   instance_types  = [var.node_instance_type]
+
+  launch_template {
+    id      = aws_launch_template.eks_nodes.id
+    version = aws_launch_template.eks_nodes.latest_version
+  }
 
   scaling_config {
     desired_size = var.node_desired_size

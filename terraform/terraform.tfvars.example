@@ -1,5 +1,5 @@
-aws_region = "us-east-1"
-azs        = ["us-east-1a", "us-east-1b"]
+aws_region = "us-west-2"
+azs        = ["us-west-2a", "us-west-2b"]
 
 # Must match the alb.ingress.kubernetes.io/load-balancer-name annotation
 # set on the k8s Ingress in the application repo, so Terraform's data
