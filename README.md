@@ -7,9 +7,6 @@
 
 Terraform infrastructure for the StartTech DevOps assessment — provisions the AWS resources that host the `much-to-do` full-stack app.
 
-![Architecture diagram](./screenshots/profile.png)
-![Architecture diagram](./screenshots/health.png)
-
 ## Architecture
 
 ![Architecture diagram](./screenshots/architecture.png)
