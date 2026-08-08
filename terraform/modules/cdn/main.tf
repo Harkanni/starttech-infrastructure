@@ -39,42 +39,72 @@ resource "aws_cloudfront_distribution" "starttech" {
   }
 
   # Default behavior (*): serve the React app from S3, force HTTPS
+  # Uses AWS's managed "CachingOptimized" policy — the modern replacement
+  # for forwarded_values, and AWS's recommended approach going forward.
   default_cache_behavior {
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "S3-Frontend"
-    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods         = ["GET", "HEAD"]
+    cached_methods          = ["GET", "HEAD"]
+    target_origin_id        = "S3-Frontend"
+    viewer_protocol_policy  = "redirect-to-https"
     compress                = true
-
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
+    cache_policy_id         = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
   }
 
-  # /api/* behavior: route dynamic traffic to the ALB, caching fully
-  # disabled, everything forwarded so the Go backend can parse cookies,
-  # CORS headers, and query strings itself.
+  # Backend behaviors: routed by the REAL top-level prefixes the Go app
+  # actually serves (confirmed from internal/routes) — there is no /api
+  # prefix anywhere in this backend. The original devs deliberately picked
+  # these names (e.g. /tasks instead of /todos) specifically to avoid
+  # colliding with the frontend's React Router page routes, which is what
+  # makes this split safe: any path NOT in this list falls through to the
+  # default behavior (S3 + SPA fallback) below.
   ordered_cache_behavior {
-    path_pattern           = "/api/*"
-    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
-    cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "ALB-Backend"
-    viewer_protocol_policy = "redirect-to-https"
+    path_pattern              = "/health"
+    allowed_methods           = ["GET", "HEAD"]
+    cached_methods            = ["GET", "HEAD"]
+    target_origin_id          = "ALB-Backend"
+    viewer_protocol_policy    = "redirect-to-https"
+    cache_policy_id           = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
+    origin_request_policy_id  = "b689b0a8-53d0-40ab-baf2-68738e2966ac" # Managed-AllViewerExceptHostHeader
+  }
 
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
+  ordered_cache_behavior {
+    path_pattern              = "/auth/*"
+    allowed_methods           = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods            = ["GET", "HEAD"]
+    target_origin_id          = "ALB-Backend"
+    viewer_protocol_policy    = "redirect-to-https"
+    cache_policy_id           = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    origin_request_policy_id  = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+  }
 
-    forwarded_values {
-      query_string = true
-      headers      = ["*"]
-      cookies {
-        forward = "all"
-      }
-    }
+  ordered_cache_behavior {
+    path_pattern              = "/tasks*"
+    allowed_methods           = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods            = ["GET", "HEAD"]
+    target_origin_id          = "ALB-Backend"
+    viewer_protocol_policy    = "redirect-to-https"
+    cache_policy_id           = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    origin_request_policy_id  = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+  }
+
+  ordered_cache_behavior {
+    path_pattern              = "/users/*"
+    allowed_methods           = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods            = ["GET", "HEAD"]
+    target_origin_id          = "ALB-Backend"
+    viewer_protocol_policy    = "redirect-to-https"
+    cache_policy_id           = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    origin_request_policy_id  = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+  }
+
+  ordered_cache_behavior {
+    path_pattern              = "/swagger/*"
+    allowed_methods           = ["GET", "HEAD"]
+    cached_methods            = ["GET", "HEAD"]
+    target_origin_id          = "ALB-Backend"
+    viewer_protocol_policy    = "redirect-to-https"
+    cache_policy_id           = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    origin_request_policy_id  = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
   }
 
   # SPA routing fix: rewrite 403/404 from S3 into a 200 for /index.html so

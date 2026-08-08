@@ -1,7 +1,7 @@
 variable "frontend_bucket_name" {
   description = "S3 bucket name for the React frontend static assets"
   type        = string
-  default     = "starttech-frontend-bucket-851438481377"
+  default     = "starttech-frontend-bucket-969325258559"
 }
 
 variable "ecr_repo_name" {

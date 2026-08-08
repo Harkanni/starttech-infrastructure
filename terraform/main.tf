@@ -7,9 +7,9 @@ terraform {
   }
 
   backend "s3" {
-    bucket       = "starttech-terraform-state-file-bucket-starttechiam"
+    bucket       = "starttech-terraform-state-file-bucket-akanniaws3iam"
     key          = "state/terraform.tfstate"
-    region       = "us-west-2"
+    region       = "us-east-1"
     encrypt      = true
     use_lockfile = true
   }
