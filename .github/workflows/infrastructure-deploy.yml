@@ -16,9 +16,10 @@ concurrency:
 env:
   AWS_REGION: us-west-2
 
+
 jobs:
   terraform:
-    name: Terraform fmt, validate, apply
+    name: Terraform Format, Validate, Apply
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -28,29 +29,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION || 'us-west-2' }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.9.0"
+          terraform_version: "1.15.6"
 
-      - name: Terraform fmt (check formatting)
-        run: terraform fmt -recursive
+      # 1. Format code FIRST so it doesn't break later execution plans
+      - name: Terraform Format
+        run: terraform fmt -recursive 
 
-      - name: Terraform init
+      - name: Terraform Init
         run: terraform init
 
-      - name: Terraform validate
+      - name: Terraform Validate
         run: terraform validate
 
-      - name: Terraform plan
+      - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      - name: Terraform apply
+      - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
