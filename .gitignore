@@ -24,3 +24,6 @@ crash.log
 crash.*.log
 get_helm*
 helm-v3*
+bringup.sh
+teardown.sh
+last-image-tag.txt
